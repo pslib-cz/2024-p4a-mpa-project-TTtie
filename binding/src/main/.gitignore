@@ -1,0 +1,2 @@
+# Build root (library files for ARMv8 and x86_64) are provided with the project
+build_root/
