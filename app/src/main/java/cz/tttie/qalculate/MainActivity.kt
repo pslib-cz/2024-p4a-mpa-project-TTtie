@@ -1,7 +1,6 @@
 package cz.tttie.qalculate
 
 import android.os.Bundle
-import android.text.Html
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,12 +38,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Log.d("TEST", System.getenv("LD_LIBRARY_PATH") ?: "No LD_LIBRARY_PATH")
     val test = Qalculate(LocalContext.current)
-
+    val calc = test.calculate("solve((3 / (x + 2)) + (5x / (4−x^2)) = (3 / (x−2)) + (x / (x^2 − 4)))")
+    Log.d("Calc", "printing messages:")
+    for (msg in calc.messages) {
+        Log.d("Calc", "${msg.type}: ${msg.message}")
+    }
+    Log.d("Calc", "message print ended!")
     Text(
         text = AnnotatedString.fromHtml(
-            test.calculate("solve((3 / (x + 2)) + (5x / (4−x^2)) = (3 / (x−2)) + (x / (x^2 − 4)))").htmlResult,
+            calc.htmlResult,
         ),
         modifier = modifier
     )

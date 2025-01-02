@@ -1,6 +1,7 @@
+#include <vector>
+#include <string>
 #include <jni.h>
 #include <android/log.h>
-#include <string>
 #include <unicode/unistr.h>
 #include <unicode/ucnv.h>
 #include <libqalculate/qalculate.h>
@@ -16,9 +17,25 @@ Calculator *getCalc(JNIEnv *env, jobject thiz) {
     return reinterpret_cast<Calculator *>(ptr);
 }
 
+jstring utf8ToString(JNIEnv *env, const std::string &str) {
+    auto icuStr = icu::UnicodeString::fromUTF8(str);
+    auto utf16StrBuffer = reinterpret_cast<const jchar *>(icuStr.getBuffer());
+
+    return env->NewString(utf16StrBuffer, icuStr.length());
+}
+
+jobject convertCalculatorMessage(JNIEnv *env, CalculatorMessage *msg) {
+    auto cls = env->FindClass("cz/tttie/qalculate/binding/CalculatorMessage");
+    auto method = env->GetStaticMethodID(cls, "fromNative",
+                                         "(ILjava/lang/String;)Lcz/tttie/qalculate/binding/CalculatorMessage;");
+
+    auto javaStr = utf8ToString(env, msg->message());
+    return env->CallStaticObjectMethod(cls, method, static_cast<jint>(msg->type()), javaStr);
+}
+
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_cz_tttie_qalculate_binding_Qalculate_createCalculator(JNIEnv *env, jclass clazz) {
+Java_cz_tttie_qalculate_binding_Qalculate_createCalculator(JNIEnv * /* env */, jclass /* clazz */) {
     __android_log_write(android_LogPriority::ANDROID_LOG_DEBUG, "C", "Test");
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "MemoryLeak" // This is leaked on purpose
@@ -46,7 +63,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     auto calc = getCalc(env, thiz);
 
     auto strLength = env->GetStringLength(expr);
-    std::unique_ptr<jchar> strData(new jchar[strLength]);
+    auto strData = std::make_unique<jchar[]>(strLength);
 
     env->GetStringRegion(expr, 0, strLength, strData.get());
 
@@ -61,13 +78,24 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
 
     auto resultCls = env->FindClass("cz/tttie/qalculate/binding/CalculationResult");
     auto resultConstructor = env->GetMethodID(resultCls, "<init>",
-                                              "(Ljava/lang/String;[Ljava/lang/String;)V");
-    auto arr = env->NewObjectArray(0, env->FindClass("java/lang/String"), nullptr);
-    icu::UnicodeString resultStr = icu::UnicodeString::fromUTF8(result);
+                                              "(Ljava/lang/String;[Lcz/tttie/qalculate/binding/CalculatorMessage;)V");
 
-    // SAFE: it can be safely assumed that char16_t will have exactly 16 bits on the platforms we're compiling for
-    auto resultBuffer = reinterpret_cast<const jchar *>(resultStr.getBuffer());
-    auto javaResultStr = env->NewString(resultBuffer, resultStr.length());
+
+    auto javaResultStr = utf8ToString(env, result);
+
+    std::vector<jobject> messages;
+    while (calc->message()) {
+        messages.push_back(convertCalculatorMessage(env, calc->message()));
+        calc->nextMessage();
+    }
+
+    auto arr = env->NewObjectArray(static_cast<jint>(messages.size()),
+                                   env->FindClass("cz/tttie/qalculate/binding/CalculatorMessage"),
+                                   nullptr);
+
+    for (int i = 0; i < messages.size(); i++) {
+        env->SetObjectArrayElement(arr, i, messages[i]);
+    }
 
     auto obj = env->NewObject(resultCls, resultConstructor, javaResultStr, arr);
 
