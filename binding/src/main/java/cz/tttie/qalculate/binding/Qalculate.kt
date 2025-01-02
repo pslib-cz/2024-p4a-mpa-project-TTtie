@@ -11,10 +11,19 @@ class Qalculate(ctx: Context) : AutoCloseable {
     }
 
     /**
-     * A native method that is implemented by the 'binding' native library,
-     * which is packaged with this application.
+     * Calculates an expression, blocks until the operation is completed
      */
-    external fun stringFromJNI(): String
+    external fun calculate(expr: String, darkTheme: Boolean = false): CalculationResult
+
+    /**
+     * Aborts the currently running calculation
+     */
+    external fun abortCalculation()
+
+    /**
+     * Polls whether a calculation or a print is pending
+     */
+    external fun isBusy(): Boolean
 
     companion object {
         @JvmStatic
