@@ -29,7 +29,8 @@ include(ExternalProject)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
-        binding.cpp)
+        binding.cpp
+        evaluation_options.cpp)
 
 add_library(asprintf STATIC IMPORTED)
 set_target_properties(asprintf PROPERTIES

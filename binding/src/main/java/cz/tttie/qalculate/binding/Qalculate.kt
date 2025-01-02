@@ -2,6 +2,7 @@ package cz.tttie.qalculate.binding
 
 import android.content.Context
 import com.getkeepsafe.relinker.ReLinker
+import cz.tttie.qalculate.binding.options.EvaluationOptions
 
 class Qalculate(ctx: Context) : AutoCloseable {
     private val calculatorPtr: Long
@@ -28,6 +29,9 @@ class Qalculate(ctx: Context) : AutoCloseable {
     companion object {
         @JvmStatic
         private external fun createCalculator(): Long
+
+        @JvmStatic
+        private external fun getDefaultEvaluationOptions(): EvaluationOptions
     }
 
     fun finalize() {

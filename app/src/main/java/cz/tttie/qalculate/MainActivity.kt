@@ -17,7 +17,6 @@ import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.tooling.preview.Preview
 import cz.tttie.qalculate.binding.Qalculate
 import cz.tttie.qalculate.ui.theme.QalculateTheme
-//import cz.tttie.sample_binding.NativeLib
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +39,7 @@ class MainActivity : ComponentActivity() {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     val test = Qalculate(LocalContext.current)
     val calc = test.calculate("solve((3 / (x + 2)) + (5x / (4−x^2)) = (3 / (x−2)) + (x / (x^2 − 4)))")
+    Log.d("Calc", "parsed: ${calc.parsedExpression}")
     Log.d("Calc", "printing messages:")
     for (msg in calc.messages) {
         Log.d("Calc", "${msg.type}: ${msg.message}")

@@ -7,12 +7,7 @@ data class CalculatorMessage(
     companion object {
         @JvmStatic
         private fun fromNative(type: Int, msg: String) = CalculatorMessage(
-            when (type) {
-                0 -> MessageType.INFORMATION
-                1 -> MessageType.WARNING
-                2 -> MessageType.ERROR
-                else -> throw IllegalArgumentException("Invalid type argument")
-            },
+            MessageType.entries[type],
             msg
         )
     }
