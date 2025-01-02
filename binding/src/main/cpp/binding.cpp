@@ -60,7 +60,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_abortCalculation(JNIEnv *env, jobject 
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, jstring expr,
-                                                    jboolean darkTheme) {
+                                                    jobject jEvalOpts) {
     auto calc = getCalc(env, thiz);
 
     auto strLength = env->GetStringLength(expr);
@@ -74,10 +74,21 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
 
     std::string parsedExpression;
 
+    auto qEvalOpts = qalcBinding::EvaluationOptions::fromJava(env, jEvalOpts);
+
+    EvaluationOptions evalOpts(default_evaluation_options);
+
+    evalOpts.auto_post_conversion = qEvalOpts.unitConversion();
+    evalOpts.approximation = qEvalOpts.approxMode();
+
+    PrintOptions printOpts(default_print_options);
+    printOpts.max_decimals = qEvalOpts.precision();
+
+
     auto result = calc->calculateAndPrint(calc->unlocalizeExpression(stdStr), 0,
-                                          default_user_evaluation_options, default_print_options,
-                                          AUTOMATIC_FRACTION_AUTO, AUTOMATIC_APPROXIMATION_AUTO,
-                                          &parsedExpression, -1, nullptr, true, darkTheme ? 2 : 0);
+                                          evalOpts, printOpts, AUTOMATIC_FRACTION_AUTO,
+                                          AUTOMATIC_APPROXIMATION_AUTO, &parsedExpression, -1,
+                                          nullptr, true, qEvalOpts.expressionColorization());
 
     auto resultCls = env->FindClass("cz/tttie/qalculate/binding/CalculationResult");
     auto resultConstructor = env->GetMethodID(resultCls, "<init>",
@@ -115,6 +126,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_isBusy(JNIEnv *env, jobject thiz) {
 }
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptions(JNIEnv *env, jclass /* clazz */) {
+Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptions(JNIEnv *env,
+                                                                      jclass /* clazz */) {
     return qalcBinding::EvaluationOptions::getDefault().toJava(env);
 }

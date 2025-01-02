@@ -14,7 +14,7 @@ class Qalculate(ctx: Context) : AutoCloseable {
     /**
      * Calculates an expression, blocks until the operation is completed
      */
-    external fun calculate(expr: String, darkTheme: Boolean = false): CalculationResult
+    external fun calculate(expr: String, opts: EvaluationOptions = getDefaultEvaluationOptions()): CalculationResult
 
     /**
      * Aborts the currently running calculation
