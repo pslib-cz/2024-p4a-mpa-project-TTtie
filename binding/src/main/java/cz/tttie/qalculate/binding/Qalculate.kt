@@ -26,6 +26,12 @@ class Qalculate(ctx: Context) : AutoCloseable {
      */
     external fun isBusy(): Boolean
 
+    val functions by lazy {
+        getFns()
+    }
+
+    private external fun getFns(): Array<CalculatorFunction>
+
     companion object {
         @JvmStatic
         private external fun createCalculator(): Long

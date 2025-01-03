@@ -41,6 +41,8 @@ android {
 
 dependencies {
     implementation(project(":binding"))
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.ui.text)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

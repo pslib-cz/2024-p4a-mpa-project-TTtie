@@ -10,10 +10,14 @@ activityCompose = "1.9.3"
 composeBom = "2024.12.01"
 appcompat = "1.7.0"
 material = "1.12.0"
+materialIconsExtended = "1.7.6"
+navigationCompose = "2.8.5"
 relinker = "1.4.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-ui-text = { module = "androidx.compose.ui:ui-text", name = "ui-text"}
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

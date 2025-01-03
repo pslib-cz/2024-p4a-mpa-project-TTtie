@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Qalculate!"
+rootProject.name = "cz.tttie.qalc"
 include(":app")
 include(":binding")

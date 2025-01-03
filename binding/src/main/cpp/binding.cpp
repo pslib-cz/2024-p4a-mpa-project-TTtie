@@ -6,24 +6,7 @@
 #include <unicode/ucnv.h>
 #include <libqalculate/qalculate.h>
 #include "evaluation_options.hpp"
-
-
-Calculator *getCalc(JNIEnv *env, jobject thiz) {
-    auto field = env->GetFieldID(
-            env->GetObjectClass(thiz),
-            "calculatorPtr", "J"
-    );
-    long ptr = env->GetLongField(thiz, field);
-
-    return reinterpret_cast<Calculator *>(ptr);
-}
-
-jstring utf8ToString(JNIEnv *env, const std::string &str) {
-    auto icuStr = icu::UnicodeString::fromUTF8(str);
-    auto utf16StrBuffer = reinterpret_cast<const jchar *>(icuStr.getBuffer());
-
-    return env->NewString(utf16StrBuffer, icuStr.length());
-}
+#include "utils.hpp"
 
 jobject convertCalculatorMessage(JNIEnv *env, CalculatorMessage *msg) {
     auto cls = env->FindClass("cz/tttie/qalculate/binding/CalculatorMessage");
