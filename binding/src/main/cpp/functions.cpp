@@ -58,6 +58,9 @@ Java_cz_tttie_qalculate_binding_Qalculate_getFns(JNIEnv *env, jobject thiz) {
                 argDesc = defaultArg.printlong();
             }
 
+            if (argType.empty()) {
+                argType = "any";
+            }
 
             std::string argStr(argName);
             argStr.reserve(argName.length() + 2 + argType.length() + 2);
