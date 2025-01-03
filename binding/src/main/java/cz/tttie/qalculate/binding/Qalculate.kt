@@ -30,6 +30,10 @@ class Qalculate(ctx: Context) : AutoCloseable {
         getFns()
     }
 
+    val comma by lazy {
+        getCommaNative()
+    }
+
     private external fun getFns(): Array<CalculatorFunction>
 
     companion object {
@@ -53,4 +57,6 @@ class Qalculate(ctx: Context) : AutoCloseable {
     }
 
     private external fun deleteCalculator()
+
+    private external fun getCommaNative(): String
 }

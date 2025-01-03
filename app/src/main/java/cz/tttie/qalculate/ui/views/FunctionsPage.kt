@@ -1,7 +1,6 @@
 package cz.tttie.qalculate.ui.views
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,13 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cz.tttie.qalculate.binding.CalculatorFunction
-import cz.tttie.qalculate.binding.Qalculate
+import cz.tttie.qalculate.ui.LocalCalculator
 import cz.tttie.qalculate.ui.vm.CategoryViewModel
 import cz.tttie.qalculate.util.CategoryTree
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
+fun FunctionsPage(modifier: Modifier = Modifier) {
+    val qalc = LocalCalculator.current
     val categorized = remember {
         val root = CategoryTree("Root")
 
@@ -172,7 +172,7 @@ fun FunctionItemColumn(
     showCategory: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier) {
+    LazyColumn(modifier = modifier) {
         items(functions, key = { it.name }) {
             FunctionItem(it, colors, showCategory)
         }
@@ -186,11 +186,29 @@ fun FunctionItem(
     showCategory: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val qalc = LocalCalculator.current
+
+    val sep = "${qalc.comma} "
+
+    val nameWithArgs = buildString {
+        append(fn.name)
+        append("(")
+        append(fn.arguments.joinToString(sep))
+        append(")")
+    }
+
     ListItem(headlineContent = {
         Text(fn.humanReadableName)
     }, supportingContent = {
         Text(fn.description)
     }, overlineContent = {
-        Text(if (showCategory) "${fn.category} ${Typography.middleDot} ${fn.name}" else fn.name)
+        Text(
+            if (showCategory) "${
+                fn.category.replace(
+                    "/",
+                    " ${Typography.rightGuillemet} "
+                )
+            } ${Typography.middleDot} $nameWithArgs" else nameWithArgs
+        )
     }, modifier = modifier, colors = colors)
 }

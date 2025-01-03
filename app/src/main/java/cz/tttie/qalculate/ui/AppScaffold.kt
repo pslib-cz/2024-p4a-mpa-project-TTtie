@@ -16,8 +16,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -30,72 +32,78 @@ import cz.tttie.qalculate.ui.views.FunctionsPage
 import cz.tttie.qalculate.ui.views.SettingsPage
 import cz.tttie.qalculate.ui.vm.SettingsPageViewModel
 
+val LocalCalculator =
+    staticCompositionLocalOf<Qalculate> { throw IllegalStateException("Calculator not provided!") }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScaffold() {
     val nav = rememberNavController()
     val ctx = LocalContext.current
     val qalc = remember { Qalculate(ctx) }
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        TopAppBar(navigationIcon = {
-            val currentBackStackEntry by nav.currentBackStackEntryAsState()
-            if (currentBackStackEntry != null && nav.previousBackStackEntry != null) {
-                Log.d("AppScaffold", "recompose!")
+
+    CompositionLocalProvider(LocalCalculator provides qalc) {
+        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+            TopAppBar(navigationIcon = {
+                val currentBackStackEntry by nav.currentBackStackEntryAsState()
+                if (currentBackStackEntry != null && nav.previousBackStackEntry != null) {
+                    Log.d("AppScaffold", "recompose!")
+                    IconButton(onClick = {
+                        nav.popBackStack()
+                    }) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Go back"
+                        )
+                    }
+                }
+            }, title = {}, actions = {
                 IconButton(onClick = {
-                    nav.popBackStack()
+                    if (nav.currentDestination?.route != "/functions") nav.navigate("/functions") {
+                        popUpTo("/") {}
+                    }
                 }) {
                     Icon(
-                        Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Go back"
+                        Icons.Rounded.Functions, contentDescription = "Functions"
                     )
                 }
-            }
-        }, title = {}, actions = {
-            IconButton(onClick = {
-                if (nav.currentDestination?.route != "/functions") nav.navigate("/functions") {
-                    popUpTo("/") {}
+                IconButton(onClick = {
+                    if (nav.currentDestination?.route != "/settings") nav.navigate("/settings") {
+                        popUpTo("/") {}
+                    }
+                }) {
+                    Icon(
+                        Icons.Rounded.Settings, contentDescription = "Settings"
+                    )
                 }
-            }) {
-                Icon(
-                    Icons.Rounded.Functions, contentDescription = "Functions"
-                )
-            }
-            IconButton(onClick = {
-                if (nav.currentDestination?.route != "/settings") nav.navigate("/settings") {
-                    popUpTo("/") {}
+                IconButton(onClick = {
+                    if (nav.currentDestination?.route != "/about") nav.navigate("/about") {
+                        popUpTo("/") {}
+                    }
+                }) {
+                    Icon(
+                        Icons.Rounded.Info, contentDescription = "About"
+                    )
                 }
-            }) {
-                Icon(
-                    Icons.Rounded.Settings, contentDescription = "Settings"
-                )
-            }
-            IconButton(onClick = {
-                if (nav.currentDestination?.route != "/about") nav.navigate("/about") {
-                    popUpTo("/") {}
+            })
+        }) { innerPadding ->
+            NavHost(navController = nav, startDestination = "/") {
+                composable("/") {
+                    Column(modifier = Modifier.padding(innerPadding)) {
+                        Text("hi!")
+                    }
                 }
-            }) {
-                Icon(
-                    Icons.Rounded.Info, contentDescription = "About"
-                )
-            }
-        })
-    }) { innerPadding ->
-        NavHost(navController = nav, startDestination = "/") {
-            composable("/") {
-                Column(modifier = Modifier.padding(innerPadding)) {
-                    Text("hi!")
+                composable("/about") {
+                    AboutPage(modifier = Modifier.padding(innerPadding))
                 }
-            }
-            composable("/about") {
-                AboutPage(modifier = Modifier.padding(innerPadding))
-            }
-            composable("/functions") {
-                FunctionsPage(qalc, modifier = Modifier.padding(innerPadding))
-            }
-            composable("/settings") {
-                val vm = remember { SettingsPageViewModel(ctx) }
-                SettingsPage(
-                    vm = vm, modifier = Modifier.padding(innerPadding)
-                )
+                composable("/functions") {
+                    FunctionsPage(modifier = Modifier.padding(innerPadding))
+                }
+                composable("/settings") {
+                    val vm = remember { SettingsPageViewModel(ctx) }
+                    SettingsPage(
+                        vm = vm, modifier = Modifier.padding(innerPadding)
+                    )
+                }
             }
         }
     }

@@ -113,3 +113,11 @@ Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptionsNative(JNIE
                                                                             jclass /* clazz */) {
     return qalcBinding::EvaluationOptions::getDefault().toJava(env);
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_cz_tttie_qalculate_binding_Qalculate_getCommaNative(JNIEnv *env, jobject thiz) {
+    auto calc = getCalc(env, thiz);
+
+    return utf8ToString(env, calc->getComma());
+}
