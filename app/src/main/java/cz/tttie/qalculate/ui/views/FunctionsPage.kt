@@ -1,12 +1,15 @@
 package cz.tttie.qalculate.ui.views
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,11 +53,14 @@ fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
             }
             current.functions.add(fn)
         }
-        root
+        CategoryViewModel(root, true)
     }
 
     var searching by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    val searchBarPadding by animateDpAsState(
+        if (searching) 0.dp else 16.dp, label = "searchBarPadding"
+    )
 
     val stopSearching = {
         searching = false
@@ -70,18 +77,27 @@ fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
                 onExpandedChange = { searching = it },
                 expanded = searching,
                 leadingIcon = {
-                    if (searching) IconButton(onClick = {
-                        stopSearching()
-                    }) {
+                    if (searching) {
+                        IconButton(onClick = {
+                            stopSearching()
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    } else {
                         Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back"
+                            Icons.Rounded.Search, contentDescription = ""
                         )
                     }
                 })
         },
             expanded = searching,
             onExpandedChange = { searching = it },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(searchBarPadding, 0.dp),
             colors = sbDefaults
         ) {
             if (searchQuery.isNotBlank()) {
@@ -90,12 +106,14 @@ fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
                         searchQuery, ignoreCase = true
                     )
                 }
-                FunctionItemColumn(results, colors = ListItemDefaults.colors(
-                    containerColor = sbDefaults.containerColor
-                ), true)
+                FunctionItemColumn(
+                    results, colors = ListItemDefaults.colors(
+                        containerColor = sbDefaults.containerColor
+                    ), true
+                )
             }
         }
-        CategoryView(CategoryViewModel(categorized, true))
+        CategoryView(categorized)
     }
 
 }
@@ -113,21 +131,25 @@ fun CategoryView(
             if (vm.isRoot) {
                 PrimaryScrollableTabRow(state.selectedIndex, tabs = {
                     state.categoryLabels.forEachIndexed { index, name ->
-                        Tab(selected = state.selectedIndex == index,
-                            onClick = { vm.updateSelected(index) },
-                            text = {
-                                Text(name)
-                            })
+                        key(name) {
+                            Tab(selected = state.selectedIndex == index,
+                                onClick = { vm.updateSelected(index) },
+                                text = {
+                                    Text(name)
+                                })
+                        }
                     }
                 }, modifier = Modifier.fillMaxWidth())
             } else {
                 SecondaryScrollableTabRow(state.selectedIndex, tabs = {
                     state.categoryLabels.forEachIndexed { index, name ->
-                        Tab(selected = state.selectedIndex == index,
-                            onClick = { vm.updateSelected(index) },
-                            text = {
-                                Text(name)
-                            })
+                        key(name) {
+                            Tab(selected = state.selectedIndex == index,
+                                onClick = { vm.updateSelected(index) },
+                                text = {
+                                    Text(name)
+                                })
+                        }
                     }
                 })
             }
@@ -151,7 +173,7 @@ fun FunctionItemColumn(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier) {
-        items(functions) {
+        items(functions, key = { it.name }) {
             FunctionItem(it, colors, showCategory)
         }
     }
