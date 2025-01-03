@@ -5,16 +5,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,6 +34,7 @@ import cz.tttie.qalculate.binding.Qalculate
 import cz.tttie.qalculate.ui.vm.CategoryViewModel
 import cz.tttie.qalculate.util.CategoryTree
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
     val categorized = remember {
@@ -40,7 +52,49 @@ fun FunctionsPage(qalc: Qalculate, modifier: Modifier = Modifier) {
         root
     }
 
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    val stopSearching = {
+        searching = false
+        searchQuery = ""
+    }
+
     Column(modifier = modifier) {
+        val sbDefaults = SearchBarDefaults.colors()
+        SearchBar(inputField = {
+            SearchBarDefaults.InputField(searchQuery,
+                onQueryChange = { searchQuery = it },
+                onSearch = { searchQuery = it },
+                placeholder = { Text("Search functions") },
+                onExpandedChange = { searching = it },
+                expanded = searching,
+                leadingIcon = {
+                    if (searching) IconButton(onClick = {
+                        stopSearching()
+                    }) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back"
+                        )
+                    }
+                })
+        },
+            expanded = searching,
+            onExpandedChange = { searching = it },
+            modifier = Modifier.fillMaxWidth(),
+            colors = sbDefaults
+        ) {
+            if (searchQuery.isNotBlank()) {
+                val results = qalc.functions.filter {
+                    it.humanReadableName.contains(
+                        searchQuery, ignoreCase = true
+                    )
+                }
+                FunctionItemColumn(results, colors = ListItemDefaults.colors(
+                    containerColor = sbDefaults.containerColor
+                ), true)
+            }
+        }
         CategoryView(CategoryViewModel(categorized, true))
     }
 
@@ -83,36 +137,38 @@ fun CategoryView(
             FunctionItemColumn(state.functions)
         } else if (state.subcategory != null) {
             CategoryView(
-                CategoryViewModel(state.subcategory!!, false),
-                modifier = Modifier.fillMaxWidth()
+                CategoryViewModel(state.subcategory!!, false), modifier = Modifier.fillMaxWidth()
             )
         }
     }
 }
 
 @Composable
-fun FunctionItemColumn(functions: List<CalculatorFunction>, modifier: Modifier = Modifier) {
+fun FunctionItemColumn(
+    functions: List<CalculatorFunction>,
+    colors: ListItemColors = ListItemDefaults.colors(),
+    showCategory: Boolean = false,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier) {
         items(functions) {
-            FunctionItem(it)
+            FunctionItem(it, colors, showCategory)
         }
     }
 }
 
 @Composable
-fun FunctionItem(fn: CalculatorFunction, modifier: Modifier = Modifier) {
+fun FunctionItem(
+    fn: CalculatorFunction,
+    colors: ListItemColors,
+    showCategory: Boolean,
+    modifier: Modifier = Modifier
+) {
     ListItem(headlineContent = {
-        Text(
-            fn.humanReadableName,
-        )
+        Text(fn.humanReadableName)
     }, supportingContent = {
-        Text(
-            fn.description,
-        )
+        Text(fn.description)
     }, overlineContent = {
-        Text(
-            fn.name,
-        )
-    }, modifier = modifier
-    )
+        Text(if (showCategory) "${fn.category} ${Typography.middleDot} ${fn.name}" else fn.name)
+    }, modifier = modifier, colors = colors)
 }
