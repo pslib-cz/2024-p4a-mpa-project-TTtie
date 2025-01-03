@@ -14,7 +14,7 @@ class Qalculate(ctx: Context) : AutoCloseable {
     /**
      * Calculates an expression, blocks until the operation is completed
      */
-    external fun calculate(expr: String, opts: EvaluationOptions = getDefaultEvaluationOptions()): CalculationResult
+    external fun calculate(expr: String, opts: EvaluationOptions = defaultEvaluationOptions): CalculationResult
 
     /**
      * Aborts the currently running calculation
@@ -33,11 +33,15 @@ class Qalculate(ctx: Context) : AutoCloseable {
     private external fun getFns(): Array<CalculatorFunction>
 
     companion object {
+        val defaultEvaluationOptions by lazy {
+            getDefaultEvaluationOptionsNative()
+        }
+
         @JvmStatic
         private external fun createCalculator(): Long
 
         @JvmStatic
-        private external fun getDefaultEvaluationOptions(): EvaluationOptions
+        private external fun getDefaultEvaluationOptionsNative(): EvaluationOptions
     }
 
     fun finalize() {

@@ -109,7 +109,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_isBusy(JNIEnv *env, jobject thiz) {
 }
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptions(JNIEnv *env,
-                                                                      jclass /* clazz */) {
+Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptionsNative(JNIEnv *env,
+                                                                            jclass /* clazz */) {
     return qalcBinding::EvaluationOptions::getDefault().toJava(env);
 }
