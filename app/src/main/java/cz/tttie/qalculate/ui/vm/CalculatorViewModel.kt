@@ -19,6 +19,10 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
         ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
     var opts = loadOptsFromPreferences()
 
+    init {
+        qalc.setPrecision(opts.precision)
+    }
+
     /**
      * Grabs a lock to the {@see qalc} instance and executes the given function.
      */

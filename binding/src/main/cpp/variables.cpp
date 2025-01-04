@@ -7,6 +7,7 @@
 #include "utils.hpp"
 #include "evaluation_options.hpp"
 #include <jni.h>
+#include <android/log_macros.h>
 
 
 extern "C"

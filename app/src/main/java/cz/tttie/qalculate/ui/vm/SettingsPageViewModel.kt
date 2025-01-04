@@ -9,6 +9,7 @@ import cz.tttie.qalculate.binding.options.evaluation.UnitConversion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.math.max
 
 class SettingsPageViewModel(private val calcVm: CalculatorViewModel, ctx: Context) : ViewModel() {
     private val prefs = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -41,6 +42,7 @@ class SettingsPageViewModel(private val calcVm: CalculatorViewModel, ctx: Contex
             it.copy(precision = precision)
         }
         calcVm.opts = calcVm.opts.copy(precision = precision)
+        calcVm.useQalc { it.setPrecision(max(2, precision)) }
     }
 
     fun setUnitConversion (unitConversion: UnitConversion) {

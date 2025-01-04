@@ -39,6 +39,7 @@ class Qalculate(ctx: Context) : AutoCloseable {
 
     private external fun getFunctionsNative(): Array<CalculatorFunction>
     external fun getVariables(opts: EvaluationOptions = defaultEvaluationOptions): Array<CalculatorVariable>
+    external fun setPrecision(precision: Int)
 
     companion object {
         val defaultEvaluationOptions by lazy {

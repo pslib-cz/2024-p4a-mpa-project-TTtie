@@ -46,6 +46,7 @@ import cz.tttie.qalculate.binding.options.evaluation.UnitConversion
 import cz.tttie.qalculate.ui.theme.AppTypography
 import cz.tttie.qalculate.ui.vm.SettingsPageViewModel
 import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun SettingsPage(vm: SettingsPageViewModel = viewModel(), modifier: Modifier = Modifier) {
@@ -66,6 +67,7 @@ fun SettingsPage(vm: SettingsPageViewModel = viewModel(), modifier: Modifier = M
             },
             title = "Precision",
             icon = Icons.Rounded._123,
+            allowedRange = 2..10000,
             supportingContent = {
                 if (it <= -1) {
                     Text("Unlimited")
@@ -187,6 +189,7 @@ fun NumberListItem(
     onValueChanged: (Int) -> Unit,
     title: String,
     icon: ImageVector,
+    allowedRange: IntRange,
     supportingContent: @Composable ((Int) -> Unit),
     modifier: Modifier = Modifier
 ) {
@@ -227,19 +230,27 @@ fun NumberListItem(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Button(onClick =  {
-                                selectorValue = max(-1, selectorValue - 1)
-                            }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(64.dp)) {
+                                selectorValue = max(allowedRange.first, selectorValue - 1)
+                            },
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier.size(64.dp),
+                                enabled = allowedRange.contains(selectorValue - 1)
+                            ) {
                                 Text("\u2212", style = AppTypography.displaySmall)
                             }
                             Text(
-                                text = if (selectorValue <= -1) "\u221E" else selectorValue.toString(),
+                                text = selectorValue.toString(),
                                 style = AppTypography.displaySmall,
                                 modifier = Modifier.defaultMinSize(64.dp),
                                 textAlign = TextAlign.Center
                             )
                             Button(onClick =  {
-                                selectorValue = max(-1, selectorValue + 1)
-                            }, contentPadding = PaddingValues(0.dp), modifier = Modifier.size(64.dp)) {
+                                selectorValue = min(allowedRange.last, selectorValue + 1)
+                            },
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier.size(64.dp),
+                                enabled = allowedRange.contains(selectorValue + 1)
+                            ) {
                                 Text("\u002b", style = AppTypography.displaySmall)
                             }
                         }

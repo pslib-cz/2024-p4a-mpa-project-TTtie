@@ -122,3 +122,10 @@ Java_cz_tttie_qalculate_binding_Qalculate_getCommaNative(JNIEnv *env, jobject th
 
     return utf8ToString(env, calc->getComma());
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_cz_tttie_qalculate_binding_Qalculate_setPrecision(JNIEnv *env, jobject thiz, jint precision) {
+    auto calc = getCalc(env, thiz);
+
+    calc->setPrecision(precision);
+}
