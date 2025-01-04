@@ -32,7 +32,8 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         binding.cpp
         evaluation_options.cpp
         functions.cpp
-        utils.cpp)
+        utils.cpp
+        variables.cpp)
 
 add_library(asprintf STATIC IMPORTED)
 set_target_properties(asprintf PROPERTIES

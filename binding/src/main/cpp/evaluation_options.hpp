@@ -15,7 +15,7 @@ namespace qalcBinding {
         ApproximationMode _approxMode;
         int _precision;
         AutoPostConversion _unitConversion;
-        int _expressionColorization;
+        bool _expressionColorization;
         EvaluationOptions(ApproximationMode approxMode, int precision,
                           AutoPostConversion unitConversion, int expressionColorization) :
                 _approxMode(approxMode), _precision(precision), _unitConversion(unitConversion),
@@ -28,9 +28,13 @@ namespace qalcBinding {
 
         AutoPostConversion unitConversion() const noexcept;
 
-        int expressionColorization() const noexcept;
+        bool expressionColorization() const noexcept;
 
         jobject toJava(JNIEnv *env);
+
+        constexpr int qalcColorization(bool isNightMode) const {
+            return _expressionColorization ? (isNightMode ? 2 : 1) : 0;
+        }
 
         static EvaluationOptions fromJava(JNIEnv *env, jobject evalOptions);
 

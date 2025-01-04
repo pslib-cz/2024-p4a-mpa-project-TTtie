@@ -1,10 +1,13 @@
 package cz.tttie.qalculate.binding
 
 import android.content.Context
+import android.util.Log
 import com.getkeepsafe.relinker.ReLinker
 import cz.tttie.qalculate.binding.options.EvaluationOptions
 
 class Qalculate(ctx: Context) : AutoCloseable {
+    private val assets = ctx.assets // used by native code
+    private var closed = false
     private val calculatorPtr: Long
     init {
         ReLinker.loadLibrary(ctx, "qalculate_binding")
@@ -27,14 +30,15 @@ class Qalculate(ctx: Context) : AutoCloseable {
     external fun isBusy(): Boolean
 
     val functions by lazy {
-        getFns()
+        getFunctionsNative()
     }
 
     val comma by lazy {
         getCommaNative()
     }
 
-    private external fun getFns(): Array<CalculatorFunction>
+    private external fun getFunctionsNative(): Array<CalculatorFunction>
+    external fun getVariables(opts: EvaluationOptions = defaultEvaluationOptions): Array<CalculatorVariable>
 
     companion object {
         val defaultEvaluationOptions by lazy {
@@ -48,12 +52,12 @@ class Qalculate(ctx: Context) : AutoCloseable {
         private external fun getDefaultEvaluationOptionsNative(): EvaluationOptions
     }
 
-    fun finalize() {
-        close() // avoid leaking native resources when unused
-    }
-
     override fun close() {
-        deleteCalculator()
+        Log.d("Qalculate", "Closing calculator", Exception("Stack trace"))
+        if (!closed) {
+            deleteCalculator()
+            closed = true
+        }
     }
 
     private external fun deleteCalculator()

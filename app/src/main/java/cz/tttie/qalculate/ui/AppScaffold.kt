@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Functions
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded._123
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,19 +31,21 @@ import cz.tttie.qalculate.binding.Qalculate
 import cz.tttie.qalculate.ui.views.AboutPage
 import cz.tttie.qalculate.ui.views.FunctionsPage
 import cz.tttie.qalculate.ui.views.SettingsPage
+import cz.tttie.qalculate.ui.views.VariablesPage
+import cz.tttie.qalculate.ui.vm.CalculatorViewModel
 import cz.tttie.qalculate.ui.vm.SettingsPageViewModel
 
 val LocalCalculator =
-    staticCompositionLocalOf<Qalculate> { throw IllegalStateException("Calculator not provided!") }
+    staticCompositionLocalOf<CalculatorViewModel> { throw IllegalStateException("Calculator not provided!") }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppScaffold() {
+fun AppScaffold(qalc: Qalculate) {
     val nav = rememberNavController()
     val ctx = LocalContext.current
-    val qalc = remember { Qalculate(ctx) }
+    val vm = remember { CalculatorViewModel(ctx, qalc) }
 
-    CompositionLocalProvider(LocalCalculator provides qalc) {
+    CompositionLocalProvider(LocalCalculator provides vm) {
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
             TopAppBar(navigationIcon = {
                 val currentBackStackEntry by nav.currentBackStackEntryAsState()
@@ -57,6 +60,15 @@ fun AppScaffold() {
                     }
                 }
             }, title = {}, actions = {
+                IconButton(onClick = {
+                    if (nav.currentDestination?.route != "/variables") nav.navigate("/variables") {
+                        popUpTo("/") {}
+                    }
+                }) {
+                    Icon(
+                        Icons.Rounded._123, contentDescription = "Variables"
+                    )
+                }
                 IconButton(onClick = {
                     if (nav.currentDestination?.route != "/functions") nav.navigate("/functions") {
                         popUpTo("/") {}
@@ -98,10 +110,13 @@ fun AppScaffold() {
                 composable("/functions") {
                     FunctionsPage(modifier = Modifier.padding(innerPadding))
                 }
+                composable("/variables") {
+                    VariablesPage(modifier = Modifier.padding(innerPadding))
+                }
                 composable("/settings") {
-                    val vm = remember { SettingsPageViewModel(ctx) }
+                    val settingsVm = remember { SettingsPageViewModel(vm, ctx) }
                     SettingsPage(
-                        vm = vm, modifier = Modifier.padding(innerPadding)
+                        vm = settingsVm, modifier = Modifier.padding(innerPadding)
                     )
                 }
             }

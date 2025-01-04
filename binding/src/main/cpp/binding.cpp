@@ -20,7 +20,6 @@ jobject convertCalculatorMessage(JNIEnv *env, CalculatorMessage *msg) {
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_createCalculator(JNIEnv * /* env */, jclass /* clazz */) {
-    __android_log_write(android_LogPriority::ANDROID_LOG_DEBUG, "C", "Test");
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "MemoryLeak" // This is leaked on purpose
     auto calc = new Calculator();
@@ -66,12 +65,14 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
 
     PrintOptions printOpts(default_print_options);
     printOpts.max_decimals = qEvalOpts.precision();
-
+    printOpts.can_display_unicode_string_function = alwaysDisplayUnicode;
+    printOpts.use_unicode_signs = true;
 
     auto result = calc->calculateAndPrint(calc->unlocalizeExpression(stdStr), 0,
                                           evalOpts, printOpts, AUTOMATIC_FRACTION_AUTO,
                                           AUTOMATIC_APPROXIMATION_AUTO, &parsedExpression, -1,
-                                          nullptr, true, qEvalOpts.expressionColorization());
+                                          nullptr, true,
+                                          qEvalOpts.qalcColorization(isNightMode(env, thiz)));
 
     auto resultCls = env->FindClass("cz/tttie/qalculate/binding/CalculationResult");
     auto resultConstructor = env->GetMethodID(resultCls, "<init>",

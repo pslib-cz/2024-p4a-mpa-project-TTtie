@@ -1,23 +1,26 @@
 package cz.tttie.qalculate.ui.vm
 
 import androidx.lifecycle.ViewModel
-import cz.tttie.qalculate.binding.CalculatorFunction
 import cz.tttie.qalculate.util.CategoryTree
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class CategoryViewModel(private val categoryTree: CategoryTree, val isRoot: Boolean) : ViewModel() {
+class CategoryViewModel<T>(
+    private val categoryTree: CategoryTree<T>,
+    val isRoot: Boolean,
+    val defaultCategoryName: String
+) : ViewModel() {
     private var _state = MutableStateFlow(CategoryViewModelData(
         categoryLabels = buildList {
-            if (categoryTree.functions.isNotEmpty() && categoryTree.categories.isNotEmpty()) {
-                add("Functions")
+            if (categoryTree.items.isNotEmpty() && categoryTree.categories.isNotEmpty()) {
+                add(defaultCategoryName)
             }
             addAll(categoryTree.categories.keys)
         },
-        offset = if (categoryTree.functions.isNotEmpty()) 1 else 0,
-        functions = categoryTree.functions,
-        subcategory = if (categoryTree.functions.isEmpty()) categoryTree.categories.values.first() else null
+        offset = if (categoryTree.items.isNotEmpty()) 1 else 0,
+        items = categoryTree.items,
+        subcategory = if (categoryTree.items.isEmpty()) categoryTree.categories.values.first() else null
     ))
     val state = _state.asStateFlow()
 
@@ -27,16 +30,16 @@ class CategoryViewModel(private val categoryTree: CategoryTree, val isRoot: Bool
             it.copy(
                 selectedIndex = index,
                 subcategory = subcategory,
-                functions = if (subcategory != null) emptyList() else categoryTree.functions
+                items = if (subcategory != null) emptyList() else categoryTree.items
             )
         }
     }
 
-    data class CategoryViewModelData(
+    data class CategoryViewModelData<T>(
         val categoryLabels: List<String> = emptyList(),
         val selectedIndex: Int = 0,
-        val functions: List<CalculatorFunction> = emptyList(),
-        val subcategory: CategoryTree? = null,
+        val items: List<T> = emptyList(),
+        val subcategory: CategoryTree<T>? = null,
         internal val offset: Int = 0
     )
 }

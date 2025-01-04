@@ -9,7 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import cz.tttie.qalculate.binding.CalculatorFunction
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
+import cz.tttie.qalculate.binding.CalculatorVariable
 import cz.tttie.qalculate.ui.LocalCalculator
 import cz.tttie.qalculate.ui.components.CategorizedListing
 import cz.tttie.qalculate.ui.vm.CategoryViewModel
@@ -17,17 +19,13 @@ import cz.tttie.qalculate.util.CategoryTree
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FunctionsPage(modifier: Modifier = Modifier) {
+fun VariablesPage(modifier: Modifier = Modifier) {
     val rootVm = LocalCalculator.current
-    val fns = remember {
-        rootVm.useQalc {
-            it.functions
-        }
-    }
+    val vars = remember { rootVm.useQalc { it.getVariables(rootVm.opts) } }
     val categorized = remember {
-        val root = CategoryTree<CalculatorFunction>("Root")
+        val root = CategoryTree<CalculatorVariable>("Root")
 
-        fns.forEach { fn ->
+        vars.forEach { fn ->
             val parts = fn.category.split("/")
             var current = root
             // Create the category tree
@@ -36,8 +34,9 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
             }
             current.items.add(fn)
         }
-        CategoryViewModel(root, true, "Functions")
+        CategoryViewModel(root, true, "Variables")
     }
+
     val sbDefaults = SearchBarDefaults.colors()
 
     val searchColors = ListItemDefaults.colors(
@@ -45,10 +44,10 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
     )
     val listItemColors = ListItemDefaults.colors()
 
-    CategorizedListing(categorized, "Search functions", { q ->
-        fns.filter { it.humanReadableName.contains(q, ignoreCase = true) }
+    CategorizedListing(categorized, "Search variables", { q ->
+        vars.filter { it.humanReadableName.contains(q, ignoreCase = true) }
     }, { it.name }, modifier) { item, searching ->
-        FunctionItem(
+        VariableItem(
             item,
             if (searching) searchColors else listItemColors,
             showCategory = searching
@@ -58,26 +57,16 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun FunctionItem(
-    fn: CalculatorFunction,
+fun VariableItem(
+    fn: CalculatorVariable,
     colors: ListItemColors,
     showCategory: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val rootVm = LocalCalculator.current
-    val sep = remember { "${rootVm.useQalc { it.comma }} " }
-
-    val nameWithArgs = buildString {
-        append(fn.name)
-        append("(")
-        append(fn.arguments.joinToString(sep))
-        append(")")
-    }
-
     ListItem(headlineContent = {
         Text(fn.humanReadableName)
     }, supportingContent = {
-        Text(fn.description)
+        Text(AnnotatedString.fromHtml(fn.description))
     }, overlineContent = {
         Text(
             if (showCategory) "${
@@ -85,7 +74,7 @@ fun FunctionItem(
                     "/",
                     " ${Typography.rightGuillemet} "
                 )
-            } ${Typography.middleDot} $nameWithArgs" else nameWithArgs
+            } ${Typography.middleDot} ${fn.name}" else fn.name
         )
     }, modifier = modifier, colors = colors)
 }

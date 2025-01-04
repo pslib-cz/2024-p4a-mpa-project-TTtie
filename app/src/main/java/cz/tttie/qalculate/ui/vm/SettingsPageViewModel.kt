@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class SettingsPageViewModel(ctx: Context) : ViewModel() {
+class SettingsPageViewModel(private val calcVm: CalculatorViewModel, ctx: Context) : ViewModel() {
     private val prefs = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
     private val _state = MutableStateFlow(
         SettingsPageState(
@@ -30,6 +30,7 @@ class SettingsPageViewModel(ctx: Context) : ViewModel() {
         _state.update {
             it.copy(approximationMode = approximation)
         }
+        calcVm.opts = calcVm.opts.copy(approximation = approximation)
     }
 
     fun setPrecision (precision: Int) {
@@ -39,6 +40,7 @@ class SettingsPageViewModel(ctx: Context) : ViewModel() {
         _state.update {
             it.copy(precision = precision)
         }
+        calcVm.opts = calcVm.opts.copy(precision = precision)
     }
 
     fun setUnitConversion (unitConversion: UnitConversion) {
@@ -48,6 +50,7 @@ class SettingsPageViewModel(ctx: Context) : ViewModel() {
         _state.update {
             it.copy(unitConversion = unitConversion)
         }
+        calcVm.opts = calcVm.opts.copy(unitConversion = unitConversion)
     }
 
     fun setColorizeExpressions (colorize: Boolean) {
@@ -57,6 +60,7 @@ class SettingsPageViewModel(ctx: Context) : ViewModel() {
         _state.update {
             it.copy(colorizeExpressions = colorize)
         }
+        calcVm.opts = calcVm.opts.copy(expressionColorization = colorize)
     }
 
 

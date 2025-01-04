@@ -12,4 +12,8 @@
 Calculator *getCalc(JNIEnv *env, jobject thiz);
 jstring utf8ToString(JNIEnv *env, const std::string &str);
 
+bool isNightMode(JNIEnv *env, jobject thiz);
+
+bool alwaysDisplayUnicode(const char *, void *);
+
 #endif //QALCULATE_UTILS_HPP

@@ -11,7 +11,7 @@
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_cz_tttie_qalculate_binding_Qalculate_getFns(JNIEnv *env, jobject thiz) {
+Java_cz_tttie_qalculate_binding_Qalculate_getFunctionsNative(JNIEnv *env, jobject thiz) {
     auto calcFnCls = env->FindClass("cz/tttie/qalculate/binding/CalculatorFunction");
     auto fromNativeMethod = env->GetStaticMethodID(calcFnCls, "fromNative",
                                                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Lcz/tttie/qalculate/binding/CalculatorFunction;");
@@ -120,10 +120,15 @@ Java_cz_tttie_qalculate_binding_Qalculate_getFns(JNIEnv *env, jobject thiz) {
         }
         desc.append(paramsString);
 
-        auto obj = env->CallStaticObjectMethod(calcFnCls, fromNativeMethod, utf8ToString(env,
-                                                                                         fn->preferredName().formattedName(
-                                                                                                 TYPE_FUNCTION,
-                                                                                                 true)),
+        auto obj = env->CallStaticObjectMethod(calcFnCls, fromNativeMethod,
+                                               utf8ToString(env, fn->preferredName(
+                                                       false,
+                                                       true,
+                                                       false,
+                                                       false,
+                                                       alwaysDisplayUnicode).formattedName(
+                                                       TYPE_FUNCTION,
+                                                       true)),
                                                utf8ToString(env, fn->title()),
                                                utf8ToString(env, desc),
                                                utf8ToString(env, fn->category()), paramsArr);
