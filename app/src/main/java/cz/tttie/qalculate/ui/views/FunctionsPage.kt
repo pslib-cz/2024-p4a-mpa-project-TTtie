@@ -22,7 +22,7 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
     val fns = remember {
         rootVm.useQalc {
             it.functions
-        }
+        }.sortedBy { it.name }
     }
     val categorized = remember {
         val root = CategoryTree<CalculatorFunction>("Root")

@@ -1,5 +1,6 @@
 package cz.tttie.qalculate.ui.views
 
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemColors
@@ -21,7 +22,8 @@ import cz.tttie.qalculate.util.CategoryTree
 @Composable
 fun VariablesPage(modifier: Modifier = Modifier) {
     val rootVm = LocalCalculator.current
-    val vars = remember { rootVm.useQalc { it.getVariables(rootVm.opts) } }
+    val vars = remember { rootVm.useQalc { it.getVariables(rootVm.opts) }.sortedBy { it.name } }
+    Log.d("VariablesPage", "Variables: ${vars.joinToString("\n")}")
     val categorized = remember {
         val root = CategoryTree<CalculatorVariable>("Root")
 
