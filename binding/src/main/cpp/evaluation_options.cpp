@@ -71,7 +71,7 @@ jobject qalcBinding::EvaluationOptions::toJava(JNIEnv *env) {
 qalcBinding::EvaluationOptions qalcBinding::EvaluationOptions::getDefault() {
     return {
             ::default_evaluation_options.approximation,
-            ::default_print_options.max_decimals,
+            DEFAULT_PRECISION,
             ::default_evaluation_options.auto_post_conversion,
             false
     };
