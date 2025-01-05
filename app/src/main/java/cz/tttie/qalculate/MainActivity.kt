@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         Log.d("MainActivity", "onCreate")
-        qalculate = Qalculate(this)
+        qalculate = Qalculate.getInstance(this)
         setContent {
             QalculateTheme {
                 AppScaffold(qalculate)

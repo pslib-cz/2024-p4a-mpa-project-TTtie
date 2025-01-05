@@ -1,17 +1,17 @@
 package cz.tttie.qalculate.binding
 
 import android.content.Context
+import android.content.res.AssetManager
 import android.util.Log
 import com.getkeepsafe.relinker.ReLinker
 import cz.tttie.qalculate.binding.options.EvaluationOptions
 
-class Qalculate(ctx: Context) : AutoCloseable {
-    private val assets = ctx.assets // used by native code
+class Qalculate private constructor(ctx: Context) : AutoCloseable {
+    private val assets: AssetManager = ctx.assets
     private var closed = false
-    private val calculatorPtr: Long
     init {
         ReLinker.loadLibrary(ctx, "qalculate_binding")
-        calculatorPtr = createCalculator()
+        createCalculator()
     }
 
     /**
@@ -46,8 +46,17 @@ class Qalculate(ctx: Context) : AutoCloseable {
             getDefaultEvaluationOptionsNative()
         }
 
+        @Volatile
+        private var instance: Qalculate? = null
+
+        fun getInstance(ctx: Context): Qalculate {
+            return instance ?: synchronized(this) {
+                instance ?: Qalculate(ctx).also { instance = it }
+            }
+        }
+
         @JvmStatic
-        private external fun createCalculator(): Long
+        private external fun createCalculator()
 
         @JvmStatic
         private external fun getDefaultEvaluationOptionsNative(): EvaluationOptions
@@ -58,10 +67,15 @@ class Qalculate(ctx: Context) : AutoCloseable {
         if (!closed) {
             deleteCalculator()
             closed = true
+            instance = null
         }
     }
 
     private external fun deleteCalculator()
 
     private external fun getCommaNative(): String
+
+    init {
+        ReLinker.loadLibrary(ctx, "qalculate_binding")
+    }
 }

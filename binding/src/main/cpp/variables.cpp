@@ -14,13 +14,13 @@ extern "C"
 JNIEXPORT jobjectArray JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_getVariables(JNIEnv *env, jobject thiz,
                                                        jobject jEvalOpts) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE_RET(env, nullptr)
 
     auto evalOpts = qalcBinding::EvaluationOptions::fromJava(env, jEvalOpts);
 
 
     auto fnCls = env->FindClass("cz/tttie/qalculate/binding/CalculatorVariable");
-    auto vars = calc->variables;
+    auto vars = CALCULATOR->variables;
 
     auto fromNativeMethod = env->GetStaticMethodID(fnCls, "fromNative",
                                                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcz/tttie/qalculate/binding/CalculatorVariable;");
@@ -58,7 +58,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_getVariables(JNIEnv *env, jobject thiz
                 po.use_unicode_signs = true;
                 po.max_decimals = evalOpts.precision();
 
-                auto result = calc->print(dfn->get(), -1, po, true,
+                auto result = CALCULATOR->print(dfn->get(), -1, po, true,
                                           evalOpts.qalcColorization(isNight), TAG_TYPE_HTML);
                 desc = (varDfn->isApproximate() || isApproximate) ? SIGN_ALMOST_EQUAL " " : "= ";
                 desc += result;

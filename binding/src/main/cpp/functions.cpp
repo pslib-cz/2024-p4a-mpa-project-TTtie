@@ -16,13 +16,13 @@ Java_cz_tttie_qalculate_binding_Qalculate_getFunctionsNative(JNIEnv *env, jobjec
     auto fromNativeMethod = env->GetStaticMethodID(calcFnCls, "fromNative",
                                                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Lcz/tttie/qalculate/binding/CalculatorFunction;");
 
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE_RET(env, nullptr)
 
-    auto objArr = env->NewObjectArray(static_cast<jint>(calc->functions.size()), calcFnCls,
+    auto objArr = env->NewObjectArray(static_cast<jint>(CALCULATOR->functions.size()), calcFnCls,
                                       nullptr);
 
-    for (int i = 0; i < calc->functions.size(); i++) {
-        auto fn = calc->functions[i];
+    for (int i = 0; i < CALCULATOR->functions.size(); i++) {
+        auto fn = CALCULATOR->functions[i];
         std::vector<std::string> params;
         std::vector<std::string> longParams;
         params.reserve(fn->lastArgumentDefinitionIndex());

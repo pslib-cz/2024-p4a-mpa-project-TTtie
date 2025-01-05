@@ -18,32 +18,39 @@ jobject convertCalculatorMessage(JNIEnv *env, CalculatorMessage *msg) {
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
-Java_cz_tttie_qalculate_binding_Qalculate_createCalculator(JNIEnv * /* env */, jclass /* clazz */) {
+JNIEXPORT void JNICALL
+Java_cz_tttie_qalculate_binding_Qalculate_createCalculator(JNIEnv *env, jclass /* clazz */) {
+    if (CALCULATOR) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"),
+                      "Calculator already created");
+        return;
+    }
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "MemoryLeak" // This is leaked on purpose
-    auto calc = new Calculator();
+    new Calculator();
 #pragma clang diagnostic pop
-    calc->loadGlobalDefinitions();
-    return reinterpret_cast<long>(calc);
+    CALCULATOR->loadGlobalDefinitions();
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_deleteCalculator(JNIEnv *env, jobject thiz) {
-    delete getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE(env)
+
+    delete CALCULATOR;
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_abortCalculation(JNIEnv *env, jobject thiz) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE(env)
 
-    calc->abort();
+    CALCULATOR->abort();
 }
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, jstring expr,
                                                     jobject jEvalOpts) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE_RET(env, nullptr)
 
     auto strLength = env->GetStringLength(expr);
     auto strData = std::make_unique<jchar[]>(strLength);
@@ -68,7 +75,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     printOpts.can_display_unicode_string_function = alwaysDisplayUnicode;
     printOpts.use_unicode_signs = true;
 
-    auto result = calc->calculateAndPrint(calc->unlocalizeExpression(stdStr), 0,
+    auto result = CALCULATOR->calculateAndPrint(CALCULATOR->unlocalizeExpression(stdStr), 0,
                                           evalOpts, printOpts, AUTOMATIC_FRACTION_AUTO,
                                           AUTOMATIC_APPROXIMATION_AUTO, &parsedExpression, -1,
                                           nullptr, true,
@@ -83,9 +90,9 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     auto javaParsedStr = utf8ToString(env, parsedExpression);
 
     std::vector<jobject> messages;
-    while (calc->message()) {
-        messages.push_back(convertCalculatorMessage(env, calc->message()));
-        calc->nextMessage();
+    while (CALCULATOR->message()) {
+        messages.push_back(convertCalculatorMessage(env, CALCULATOR->message()));
+        CALCULATOR->nextMessage();
     }
 
     auto arr = env->NewObjectArray(static_cast<jint>(messages.size()),
@@ -104,9 +111,9 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_isBusy(JNIEnv *env, jobject thiz) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE_RET(env, false)
 
-    return calc->busy();
+    return CALCULATOR->busy();
 }
 extern "C"
 JNIEXPORT jobject JNICALL
@@ -118,14 +125,14 @@ Java_cz_tttie_qalculate_binding_Qalculate_getDefaultEvaluationOptionsNative(JNIE
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_getCommaNative(JNIEnv *env, jobject thiz) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE_RET(env, nullptr)
 
-    return utf8ToString(env, calc->getComma());
+    return utf8ToString(env, CALCULATOR->getComma());
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_cz_tttie_qalculate_binding_Qalculate_setPrecision(JNIEnv *env, jobject thiz, jint precision) {
-    auto calc = getCalc(env, thiz);
+    CHECK_CALCULATOR_PRESENCE(env)
 
-    calc->setPrecision(precision);
+    CALCULATOR->setPrecision(precision);
 }

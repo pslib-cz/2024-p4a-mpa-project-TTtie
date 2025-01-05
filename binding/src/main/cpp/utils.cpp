@@ -18,15 +18,6 @@ jstring utf8ToString(JNIEnv *env, const std::string &str) {
     return env->NewString(utf16StrBuffer, icuStr.length());
 }
 
-Calculator *getCalc(JNIEnv *env, jobject thiz) {
-    auto cls = env->FindClass("cz/tttie/qalculate/binding/Qalculate");
-    auto ptrField = env->GetFieldID(cls, "calculatorPtr", "J");
-
-    auto ptr = env->GetLongField(thiz, ptrField);
-
-    return reinterpret_cast<Calculator *>(ptr);
-}
-
 namespace qalcBinding {
     class Config {
     public:
