@@ -1,8 +1,10 @@
 package cz.tttie.qalculate.ui
 
 import android.util.Log
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Functions
@@ -96,7 +98,7 @@ fun AppScaffold(qalc: Qalculate) {
                     )
                 }
             })
-        }) { innerPadding ->
+        }, contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
             NavHost(navController = nav, startDestination = "/") {
                 composable("/") {
                     MainPage(
