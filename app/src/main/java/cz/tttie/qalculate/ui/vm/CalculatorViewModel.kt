@@ -2,6 +2,7 @@ package cz.tttie.qalculate.ui.vm
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.math.max
 
 class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel() {
     private val qalcLock = ReentrantLock()
@@ -39,14 +41,22 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
         _state.value = _state.value.copy(expression = textFieldValue)
     }
 
-    fun appendToExpression(char: Char) {
+    fun appendToExpression(str: String) {
         _state.value =
             _state.value.copy(expression = _state.value.expression.copy(buildString {
                 append(_state.value.expression.text.take(_state.value.expression.selection.start))
-                append(char)
-                append(_state.value.expression.text.drop(_state.value.expression.selection.start))
-            }, selection = TextRange(_state.value.expression.selection.start + 1, _state.value.expression.selection.start +1)))
+                append(str)
+                append(_state.value.expression.text.drop(_state.value.expression.selection.end))
+            },
+                selection = TextRange(
+                    _state.value.expression.selection.start + str.length,
+                    _state.value.expression.selection.start + str.length
+                )
+            )
+            )
     }
+
+    fun appendToExpression(char: Char) = appendToExpression(char.toString())
 
     fun clearExpression() {
         _state.value = _state.value.copy(expression = TextFieldValue())
@@ -61,9 +71,33 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
         if (_state.value.expression.text.isNotEmpty())
             _state.value = _state.value.copy(
                 expression = _state.value.expression.copy(buildString {
-                    append(_state.value.expression.text.take(_state.value.expression.selection.start - 1))
+                    Log.d(
+                        "CalculatorViewModel",
+                        "backspace: ${_state.value.expression.selection.start}"
+                    )
+                    Log.d(
+                        "CalculatorViewModel",
+                        "backspace: ${_state.value.expression.selection.end}"
+                    )
+                    Log.d(
+                        "CalculatorViewModel",
+                        "backspace: ${max(0, _state.value.expression.selection.start - 1)}"
+                    )
+                    append(
+                        _state.value.expression.text.take(
+                            max(
+                                0,
+                                _state.value.expression.selection.start - 1
+                            )
+                        )
+                    )
                     append(_state.value.expression.text.drop(_state.value.expression.selection.end))
-                })
+                },
+                    selection = TextRange(
+                        max(0, _state.value.expression.selection.start - 1),
+                        max(0, _state.value.expression.selection.start - 1)
+                    )
+                )
             )
     }
 
