@@ -1,5 +1,6 @@
 package cz.tttie.qalculate.ui.views
 
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemColors
@@ -11,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavHostController
 import cz.tttie.qalculate.binding.CalculatorFunction
 import cz.tttie.qalculate.ui.LocalCalculator
 import cz.tttie.qalculate.ui.components.CategorizedListing
@@ -19,7 +21,7 @@ import cz.tttie.qalculate.util.CategoryTree
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FunctionsPage(modifier: Modifier = Modifier) {
+fun FunctionsPage(nav: NavHostController, modifier: Modifier = Modifier) {
     val rootVm = LocalCalculator.current
     val fns = remember {
         rootVm.useQalc {
@@ -54,9 +56,7 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
         fns.filter { it.humanReadableName.contains(q, ignoreCase = true) }
     }, { it.name }, modifier) { item, searching ->
         FunctionItem(
-            item,
-            if (searching) searchColors else listItemColors,
-            showCategory = searching
+            nav, item, if (searching) searchColors else listItemColors, showCategory = searching
         )
     }
 
@@ -64,6 +64,7 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
 
 @Composable
 fun FunctionItem(
+    nav: NavHostController,
     fn: CalculatorFunction,
     colors: ListItemColors,
     showCategory: Boolean,
@@ -75,9 +76,11 @@ fun FunctionItem(
     val nameWithArgs = buildString {
         append(fn.name)
         append("(")
-        append(fn.arguments.joinToString(sep))
+        append(fn.arguments.joinToString(sep) { if (it.second.isNotBlank()) "${it.first}: ${it.second}" else it.first })
         append(")")
     }
+
+    val typelessArgs = fn.arguments.joinToString(sep) { it.first }
 
     ListItem(headlineContent = {
         Text(fn.humanReadableName)
@@ -87,10 +90,14 @@ fun FunctionItem(
         Text(
             if (showCategory) "${
                 fn.category.replace(
-                    "/",
-                    " ${Typography.rightGuillemet} "
+                    "/", " ${Typography.rightGuillemet} "
                 )
             } ${Typography.middleDot} $nameWithArgs" else nameWithArgs
         )
-    }, modifier = modifier, colors = colors)
+    }, modifier = modifier.clickable {
+        rootVm.appendToExpression("${fn.name}($typelessArgs)")
+        nav.navigate("/") {
+            popUpTo("/") {}
+        }
+    }, colors = colors)
 }

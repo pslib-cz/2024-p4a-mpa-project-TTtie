@@ -113,10 +113,10 @@ fun AppScaffold(qalc: Qalculate) {
                     AboutPage(modifier = Modifier.padding(innerPadding))
                 }
                 composable("/functions") {
-                    FunctionsPage(modifier = Modifier.padding(innerPadding))
+                    FunctionsPage(nav, modifier = Modifier.padding(innerPadding))
                 }
                 composable("/variables") {
-                    VariablesPage(modifier = Modifier.padding(innerPadding))
+                    VariablesPage(nav, modifier = Modifier.padding(innerPadding))
                 }
                 composable("/settings") {
                     val settingsVm = viewModel<SettingsPageViewModel>(factory = viewModelFactory {

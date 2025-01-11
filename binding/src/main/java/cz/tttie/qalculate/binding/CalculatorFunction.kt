@@ -5,7 +5,7 @@ data class CalculatorFunction(
     val humanReadableName: String,
     val description: String,
     val category: String,
-    val arguments: List<String>
+    val arguments: List<Pair<String, String>>
 ) {
     companion object {
         @JvmStatic
@@ -14,13 +14,13 @@ data class CalculatorFunction(
             humanReadableName: String,
             description: String,
             category: String,
-            arguments: Array<String>
+            arguments: Array<Array<String>>
         ) = CalculatorFunction(
             name,
             humanReadableName,
             description,
             category,
-            arguments.toList()
+            arguments.map { it[0] to it[1] }
         )
     }
 }

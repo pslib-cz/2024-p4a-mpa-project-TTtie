@@ -71,6 +71,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     evalOpts.approximation = qEvalOpts.approxMode();
 
     PrintOptions printOpts(default_print_options);
+    printOpts.interval_display = INTERVAL_DISPLAY_PLUSMINUS;
     printOpts.max_decimals = qEvalOpts.precision();
     printOpts.can_display_unicode_string_function = alwaysDisplayUnicode;
     printOpts.use_unicode_signs = true;
