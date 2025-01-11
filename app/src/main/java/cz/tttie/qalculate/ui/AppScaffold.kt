@@ -1,6 +1,5 @@
 package cz.tttie.qalculate.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,10 +18,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,14 +44,18 @@ val LocalCalculator =
 fun AppScaffold(qalc: Qalculate) {
     val nav = rememberNavController()
     val ctx = LocalContext.current
-    val vm = remember { CalculatorViewModel(ctx, qalc) }
+
+    val vm = viewModel<CalculatorViewModel>(factory = viewModelFactory {
+        addInitializer(CalculatorViewModel::class) {
+            CalculatorViewModel(ctx, qalc)
+        }
+    })
 
     CompositionLocalProvider(LocalCalculator provides vm) {
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
             TopAppBar(navigationIcon = {
                 val currentBackStackEntry by nav.currentBackStackEntryAsState()
                 if (currentBackStackEntry != null && nav.previousBackStackEntry != null) {
-                    Log.d("AppScaffold", "recompose!")
                     IconButton(onClick = {
                         nav.popBackStack()
                     }) {
@@ -115,7 +119,11 @@ fun AppScaffold(qalc: Qalculate) {
                     VariablesPage(modifier = Modifier.padding(innerPadding))
                 }
                 composable("/settings") {
-                    val settingsVm = remember { SettingsPageViewModel(vm, ctx) }
+                    val settingsVm = viewModel<SettingsPageViewModel>(factory = viewModelFactory {
+                        addInitializer(SettingsPageViewModel::class) {
+                            SettingsPageViewModel(vm, ctx)
+                        }
+                    })
                     SettingsPage(
                         vm = settingsVm, modifier = Modifier.padding(innerPadding)
                     )

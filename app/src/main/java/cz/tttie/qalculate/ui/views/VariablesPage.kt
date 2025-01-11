@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import cz.tttie.qalculate.binding.CalculatorVariable
 import cz.tttie.qalculate.ui.LocalCalculator
 import cz.tttie.qalculate.ui.components.CategorizedListing
@@ -24,20 +26,22 @@ fun VariablesPage(modifier: Modifier = Modifier) {
     val rootVm = LocalCalculator.current
     val vars = remember { rootVm.useQalc { it.getVariables(rootVm.opts) }.sortedBy { it.name } }
     Log.d("VariablesPage", "Variables: ${vars.joinToString("\n")}")
-    val categorized = remember {
-        val root = CategoryTree<CalculatorVariable>("Root")
+    val categorized = viewModel<CategoryViewModel<CalculatorVariable>>(factory = viewModelFactory {
+        addInitializer(CategoryViewModel::class) {
+            val root = CategoryTree<CalculatorVariable>("Root")
 
-        vars.forEach { fn ->
-            val parts = fn.category.split("/")
-            var current = root
-            // Create the category tree
-            parts.forEach { part ->
-                current = current.categories.getOrPut(part) { CategoryTree(part) }
+            vars.forEach { fn ->
+                val parts = fn.category.split("/")
+                var current = root
+                // Create the category tree
+                parts.forEach { part ->
+                    current = current.categories.getOrPut(part) { CategoryTree(part) }
+                }
+                current.items.add(fn)
             }
-            current.items.add(fn)
+            CategoryViewModel(root, true, "Variables")
         }
-        CategoryViewModel(root, true, "Variables")
-    }
+    })
 
     val sbDefaults = SearchBarDefaults.colors()
 

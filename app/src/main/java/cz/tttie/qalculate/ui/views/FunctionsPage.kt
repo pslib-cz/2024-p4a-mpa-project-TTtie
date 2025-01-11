@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import cz.tttie.qalculate.binding.CalculatorFunction
 import cz.tttie.qalculate.ui.LocalCalculator
 import cz.tttie.qalculate.ui.components.CategorizedListing
@@ -24,20 +26,23 @@ fun FunctionsPage(modifier: Modifier = Modifier) {
             it.functions
         }.sortedBy { it.name }
     }
-    val categorized = remember {
-        val root = CategoryTree<CalculatorFunction>("Root")
+    val categorized = viewModel<CategoryViewModel<CalculatorFunction>>(factory = viewModelFactory {
+        addInitializer(CategoryViewModel::class) {
+            val root = CategoryTree<CalculatorFunction>("Root")
 
-        fns.forEach { fn ->
-            val parts = fn.category.split("/")
-            var current = root
-            // Create the category tree
-            parts.forEach { part ->
-                current = current.categories.getOrPut(part) { CategoryTree(part) }
+            fns.forEach { fn ->
+                val parts = fn.category.split("/")
+                var current = root
+                // Create the category tree
+                parts.forEach { part ->
+                    current = current.categories.getOrPut(part) { CategoryTree(part) }
+                }
+                current.items.add(fn)
             }
-            current.items.add(fn)
+            CategoryViewModel(root, true, "Functions")
         }
-        CategoryViewModel(root, true, "Functions")
-    }
+    })
+
     val sbDefaults = SearchBarDefaults.colors()
 
     val searchColors = ListItemDefaults.colors(

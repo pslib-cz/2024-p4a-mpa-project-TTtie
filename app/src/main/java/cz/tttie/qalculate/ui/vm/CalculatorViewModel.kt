@@ -2,7 +2,6 @@ package cz.tttie.qalculate.ui.vm
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -38,22 +37,26 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
     val state = _state.asStateFlow()
 
     fun onTextFieldValueUpdate(textFieldValue: TextFieldValue) {
-        _state.value = _state.value.copy(expression = textFieldValue)
+        // Allow the user to modify the text only when keyboard mode is enabled
+        _state.value = _state.value.copy(
+            expression = if (_state.value.keyboardMode) textFieldValue
+            else _state.value.expression.copy(text = _state.value.expression.text)
+        )
     }
 
     fun appendToExpression(str: String) {
-        _state.value =
-            _state.value.copy(expression = _state.value.expression.copy(buildString {
-                append(_state.value.expression.text.take(_state.value.expression.selection.start))
-                append(str)
-                append(_state.value.expression.text.drop(_state.value.expression.selection.end))
-            },
-                selection = TextRange(
+        _state.value = _state.value.copy(
+            expression = _state.value.expression.copy(
+                buildString {
+                    append(_state.value.expression.text.take(_state.value.expression.selection.start))
+                    append(str)
+                    append(_state.value.expression.text.drop(_state.value.expression.selection.end))
+                }, selection = TextRange(
                     _state.value.expression.selection.start + str.length,
                     _state.value.expression.selection.start + str.length
                 )
             )
-            )
+        )
     }
 
     fun appendToExpression(char: Char) = appendToExpression(char.toString())
@@ -63,42 +66,32 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
     }
 
     fun calculate() {
-        val result = qalc.calculate(_state.value.expression.text)
+        val result = qalc.calculate(_state.value.expression.text, opts)
         _state.value = _state.value.copy(result = result)
     }
 
     fun backspace() {
-        if (_state.value.expression.text.isNotEmpty())
-            _state.value = _state.value.copy(
-                expression = _state.value.expression.copy(buildString {
-                    Log.d(
-                        "CalculatorViewModel",
-                        "backspace: ${_state.value.expression.selection.start}"
-                    )
-                    Log.d(
-                        "CalculatorViewModel",
-                        "backspace: ${_state.value.expression.selection.end}"
-                    )
-                    Log.d(
-                        "CalculatorViewModel",
-                        "backspace: ${max(0, _state.value.expression.selection.start - 1)}"
-                    )
+        if (_state.value.expression.text.isNotEmpty()) _state.value = _state.value.copy(
+            expression = _state.value.expression.copy(
+                buildString {
                     append(
                         _state.value.expression.text.take(
                             max(
-                                0,
-                                _state.value.expression.selection.start - 1
+                                0, _state.value.expression.selection.start - 1
                             )
                         )
                     )
                     append(_state.value.expression.text.drop(_state.value.expression.selection.end))
-                },
-                    selection = TextRange(
-                        max(0, _state.value.expression.selection.start - 1),
-                        max(0, _state.value.expression.selection.start - 1)
-                    )
+                }, selection = TextRange(
+                    max(0, _state.value.expression.selection.start - 1),
+                    max(0, _state.value.expression.selection.start - 1)
                 )
             )
+        )
+    }
+
+    fun toggleKeyboardMode() {
+        _state.value = _state.value.copy(keyboardMode = !_state.value.keyboardMode)
     }
 
     private fun loadOptsFromPreferences() = EvaluationOptions(
@@ -115,6 +108,8 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
     )
 
     data class CalculatorState(
-        val expression: TextFieldValue = TextFieldValue(), val result: CalculationResult? = null
+        val expression: TextFieldValue = TextFieldValue(),
+        val result: CalculationResult? = null,
+        val keyboardMode: Boolean = false,
     )
 }
