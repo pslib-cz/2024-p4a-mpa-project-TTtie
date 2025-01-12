@@ -7,6 +7,5 @@ import androidx.room.PrimaryKey
 data class HistoryEntry(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val expression: String,
-    val result: String,
-    val timestamp: Long
+    val result: String
 )

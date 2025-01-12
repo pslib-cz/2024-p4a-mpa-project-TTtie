@@ -87,6 +87,7 @@ fun <T> CategorizedListing(
             onExpandedChange = { searching = it },
             modifier = Modifier
                 .fillMaxWidth()
+
                 .padding(searchBarPadding, 0.dp),
             colors = sbDefaults
         ) {

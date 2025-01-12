@@ -7,12 +7,15 @@ import androidx.room.Query
 
 @Dao
 interface HistoryDao {
-    @Query("SELECT * FROM HistoryEntry ORDER BY timestamp DESC")
-    suspend fun getHistoryEntries(): List<HistoryEntry>
+    @Query("SELECT * FROM HistoryEntry ORDER BY id DESC")
+    suspend fun getEntries(): List<HistoryEntry>
 
     @Insert
-    suspend fun insertHistoryEntry(entry: HistoryEntry)
+    suspend fun insertEntry(entry: HistoryEntry)
 
     @Delete
-    suspend fun deleteHistoryEntry(entry: HistoryEntry)
+    suspend fun deleteEntry(entry: HistoryEntry)
+
+    @Query("DELETE FROM HistoryEntry")
+    suspend fun deleteAllEntries()
 }

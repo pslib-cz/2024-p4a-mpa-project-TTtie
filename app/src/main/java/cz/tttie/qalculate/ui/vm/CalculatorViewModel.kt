@@ -2,16 +2,23 @@ package cz.tttie.qalculate.ui.vm
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import cz.tttie.qalculate.QalcApplication
 import cz.tttie.qalculate.binding.CalculationResult
 import cz.tttie.qalculate.binding.Qalculate
 import cz.tttie.qalculate.binding.options.EvaluationOptions
 import cz.tttie.qalculate.binding.options.evaluation.ApproximationMode
 import cz.tttie.qalculate.binding.options.evaluation.UnitConversion
+import cz.tttie.qalculate.db.HistoryEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.math.max
@@ -38,61 +45,75 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
 
     fun onTextFieldValueUpdate(textFieldValue: TextFieldValue) {
         // Allow the user to modify the text only when keyboard mode is enabled
-        _state.value = _state.value.copy(
-            expression = if (_state.value.keyboardMode) textFieldValue
-            else _state.value.expression.copy(text = _state.value.expression.text)
-        )
+        _state.update {
+            it.copy(
+                expression = if (it.keyboardMode) textFieldValue
+                else it.expression.copy(text = it.expression.text)
+            )
+        }
     }
 
     fun appendToExpression(str: String) {
-        _state.value = _state.value.copy(
-            expression = _state.value.expression.copy(
-                buildString {
-                    append(_state.value.expression.text.take(_state.value.expression.selection.start))
-                    append(str)
-                    append(_state.value.expression.text.drop(_state.value.expression.selection.end))
-                }, selection = TextRange(
-                    _state.value.expression.selection.start + str.length,
-                    _state.value.expression.selection.start + str.length
+        _state.update {
+            it.copy(
+                expression = it.expression.copy(
+                    buildString {
+                        append(it.expression.text.take(it.expression.selection.start))
+                        append(str)
+                        append(it.expression.text.drop(it.expression.selection.end))
+                    }, selection = TextRange(
+                        it.expression.selection.start + str.length,
+                        it.expression.selection.start + str.length
+                    )
                 )
             )
-        )
+        }
     }
 
     fun appendToExpression(char: Char) = appendToExpression(char.toString())
 
     fun clearExpression() {
-        _state.value = _state.value.copy(expression = TextFieldValue())
+        _state.update { it.copy(expression = TextFieldValue()) }
     }
 
     fun calculate() {
-        val result = qalc.calculate(_state.value.expression.text, opts)
-        _state.value = _state.value.copy(result = result)
+        viewModelScope.launch {
+            val result = useQalc { qalc ->
+                qalc.calculate(_state.value.expression.text, opts)
+            }
+
+            QalcApplication.database.historyDao().insertEntry(
+                HistoryEntry(
+                    0L,
+                    dehtmlize(result.parsedExpression),
+                    dehtmlize(result.htmlResult)
+                )
+            )
+            _state.update { it.copy(result = result) }
+        }
     }
 
     fun backspace() {
-        if (_state.value.expression.text.isNotEmpty()) _state.value = _state.value.copy(
-            expression = _state.value.expression.copy(
-                buildString {
-                    append(
-                        _state.value.expression.text.take(
-                            max(
-                                0, _state.value.expression.selection.start - 1
-                            )
-                        )
+        if (_state.value.expression.text.isNotEmpty()) _state.update {
+            it.copy(
+                expression = it.expression.copy(
+                    buildString {
+                        append(it.expression.text.take(it.expression.selection.start - 1))
+                        append(it.expression.text.drop(it.expression.selection.end))
+                    }, selection = TextRange(
+                        max(0, it.expression.selection.start - 1),
+                        max(0, it.expression.selection.start - 1)
                     )
-                    append(_state.value.expression.text.drop(_state.value.expression.selection.end))
-                }, selection = TextRange(
-                    max(0, _state.value.expression.selection.start - 1),
-                    max(0, _state.value.expression.selection.start - 1)
                 )
             )
-        )
+        }
     }
 
     fun toggleKeyboardMode() {
-        _state.value = _state.value.copy(keyboardMode = !_state.value.keyboardMode)
+        _state.update { it.copy(keyboardMode = !it.keyboardMode) }
     }
+
+    private fun dehtmlize(data: String) = AnnotatedString.fromHtml(data).toString()
 
     private fun loadOptsFromPreferences() = EvaluationOptions(
         approximation = ApproximationMode.entries[prefs.getInt(

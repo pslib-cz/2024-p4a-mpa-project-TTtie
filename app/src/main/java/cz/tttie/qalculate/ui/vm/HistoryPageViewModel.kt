@@ -17,13 +17,35 @@ class HistoryPageViewModel : ViewModel() {
     fun load() {
         viewModelScope.launch {
             try {
-                val history = QalcApplication.database.historyDao().getHistoryEntries()
+                val history = QalcApplication.database.historyDao().getEntries()
                 _state.update { it.copy(history = history, loading = false) }
             } catch (e: Throwable) {
                 _state.update {
                     it.copy(error = e, loading = false)
                 }
             }
+        }
+    }
+
+    fun deleteEntry(entry: HistoryEntry) {
+        viewModelScope.launch {
+            try {
+                QalcApplication.database.historyDao().deleteEntry(entry)
+                _state.update {
+                    it.copy(history = it.history.filter { e -> e.id != entry.id })
+                }
+            } catch (e: Throwable) {
+                _state.update {
+                    it.copy(error = e)
+                }
+            }
+        }
+    }
+
+    fun deleteAllEntries() {
+        viewModelScope.launch {
+            QalcApplication.database.historyDao().deleteAllEntries()
+            _state.update { it.copy(history = emptyList()) }
         }
     }
 

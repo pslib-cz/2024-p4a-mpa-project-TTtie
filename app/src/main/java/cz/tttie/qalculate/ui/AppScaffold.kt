@@ -140,7 +140,7 @@ fun AppScaffold(qalc: Qalculate) {
                     )
                 }
                 composable("/history") {
-                    HistoryPage(modifier = Modifier.padding(innerPadding))
+                    HistoryPage(nav, modifier = Modifier.padding(innerPadding))
                 }
             }
         }
