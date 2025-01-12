@@ -11,6 +11,11 @@ class CategoryViewModel<T>(
     val isRoot: Boolean,
     val defaultCategoryName: String
 ) : ViewModel() {
+    // Cache the subcategories to avoid recomputing them
+    private val subcategories: List<CategoryViewModel<T>> = categoryTree.categories.values.map {
+        CategoryViewModel(it, false, it.name)
+    }
+
     private var _state = MutableStateFlow(CategoryViewModelData(
         categoryLabels = buildList {
             if (categoryTree.items.isNotEmpty() && categoryTree.categories.isNotEmpty()) {
@@ -20,13 +25,13 @@ class CategoryViewModel<T>(
         },
         offset = if (categoryTree.items.isNotEmpty()) 1 else 0,
         items = categoryTree.items,
-        subcategory = if (categoryTree.items.isEmpty()) categoryTree.categories.values.first() else null
+        subcategory = if (categoryTree.items.isEmpty()) subcategories.first() else null
     ))
     val state = _state.asStateFlow()
 
     fun updateSelected(index: Int) {
         _state.update {
-            val subcategory = categoryTree.categories.values.elementAtOrNull(index - it.offset)
+            val subcategory = subcategories.elementAtOrNull(index - it.offset)
             it.copy(
                 selectedIndex = index,
                 subcategory = subcategory,
@@ -39,7 +44,7 @@ class CategoryViewModel<T>(
         val categoryLabels: List<String> = emptyList(),
         val selectedIndex: Int = 0,
         val items: List<T> = emptyList(),
-        val subcategory: CategoryTree<T>? = null,
+        val subcategory: CategoryViewModel<T>? = null,
         internal val offset: Int = 0
     )
 }

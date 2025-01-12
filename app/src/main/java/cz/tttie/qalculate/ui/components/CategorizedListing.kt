@@ -150,7 +150,7 @@ fun <T> CategoryView(
             )
         } else if (state.subcategory != null) {
             CategoryView(
-                CategoryViewModel(state.subcategory!!, false, vm.defaultCategoryName),
+                state.subcategory!!,
                 modifier = Modifier.fillMaxWidth(),
                 keyProvider = keyProvider,
                 itemRenderer = itemRenderer
