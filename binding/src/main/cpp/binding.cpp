@@ -62,6 +62,7 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     str.toUTF8String(stdStr);
 
     std::string parsedExpression;
+    bool isApproximate;
 
     auto qEvalOpts = qalcBinding::EvaluationOptions::fromJava(env, jEvalOpts);
 
@@ -75,16 +76,17 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
     printOpts.max_decimals = qEvalOpts.precision();
     printOpts.can_display_unicode_string_function = alwaysDisplayUnicode;
     printOpts.use_unicode_signs = true;
+    printOpts.is_approximate = &isApproximate;
 
     auto result = CALCULATOR->calculateAndPrint(CALCULATOR->unlocalizeExpression(stdStr), 0,
-                                          evalOpts, printOpts, AUTOMATIC_FRACTION_AUTO,
-                                          AUTOMATIC_APPROXIMATION_AUTO, &parsedExpression, -1,
-                                          nullptr, true,
-                                          qEvalOpts.qalcColorization(isNightMode(env, thiz)));
+                                                evalOpts, printOpts, AUTOMATIC_FRACTION_AUTO,
+                                                AUTOMATIC_APPROXIMATION_AUTO, &parsedExpression, -1,
+                                                nullptr, true,
+                                                qEvalOpts.qalcColorization(isNightMode(env, thiz)));
 
     auto resultCls = env->FindClass("cz/tttie/qalculate/binding/CalculationResult");
     auto resultConstructor = env->GetMethodID(resultCls, "<init>",
-                                              "(Ljava/lang/String;[Lcz/tttie/qalculate/binding/CalculatorMessage;Ljava/lang/String;)V");
+                                              "(Ljava/lang/String;[Lcz/tttie/qalculate/binding/CalculatorMessage;Ljava/lang/String;Z)V");
 
 
     auto javaResultStr = utf8ToString(env, result);
@@ -104,7 +106,8 @@ Java_cz_tttie_qalculate_binding_Qalculate_calculate(JNIEnv *env, jobject thiz, j
         env->SetObjectArrayElement(arr, i, messages[i]);
     }
 
-    auto obj = env->NewObject(resultCls, resultConstructor, javaResultStr, arr, javaParsedStr);
+    auto obj = env->NewObject(resultCls, resultConstructor, javaResultStr, arr, javaParsedStr,
+                              isApproximate);
 
     return obj;
 }
