@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Functions
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded._123
@@ -30,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import cz.tttie.qalculate.binding.Qalculate
 import cz.tttie.qalculate.ui.views.AboutPage
 import cz.tttie.qalculate.ui.views.FunctionsPage
+import cz.tttie.qalculate.ui.views.HistoryPage
 import cz.tttie.qalculate.ui.views.MainPage
 import cz.tttie.qalculate.ui.views.SettingsPage
 import cz.tttie.qalculate.ui.views.VariablesPage
@@ -65,6 +67,15 @@ fun AppScaffold(qalc: Qalculate) {
                     }
                 }
             }, title = {}, actions = {
+                IconButton(onClick = {
+                    if (nav.currentDestination?.route != "/history") nav.navigate("/history") {
+                        popUpTo("/") {}
+                    }
+                }) {
+                    Icon(
+                        Icons.Rounded.History, contentDescription = "History"
+                    )
+                }
                 IconButton(onClick = {
                     if (nav.currentDestination?.route != "/variables") nav.navigate("/variables") {
                         popUpTo("/") {}
@@ -127,6 +138,9 @@ fun AppScaffold(qalc: Qalculate) {
                     SettingsPage(
                         vm = settingsVm, modifier = Modifier.padding(innerPadding)
                     )
+                }
+                composable("/history") {
+                    HistoryPage(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
