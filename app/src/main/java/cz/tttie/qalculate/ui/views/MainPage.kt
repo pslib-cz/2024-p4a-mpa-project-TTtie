@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -98,34 +99,49 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
                 )
             }
 
-            val result = AnnotatedString.fromHtml(state.result?.htmlResult ?: "")
-            Row(
+            AnimatedVisibility(
+                state.result != null,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(8.dp)
             ) {
-                Text(
-                    text = AnnotatedString.fromHtml(state.result?.htmlResult ?: ""),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(8.dp)
-                )
+                val result = AnnotatedString.fromHtml(state.result?.htmlResult ?: "")
 
-                if (state.result?.htmlResult != null) {
-                    FilledTonalIconButton({
-                        clipboard.setText(result)
-                        Toast.makeText(ctx, "Result copied to clipboard", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Icon(
-                            Icons.Rounded.ContentCopy, contentDescription = "Copy"
-                        )
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append(
+                                when (state.result?.isApproximate) {
+                                    true -> "${Typography.almostEqual} "
+                                    false -> "= "
+                                    else -> ""
+                                }
+                            )
+                            append(AnnotatedString.fromHtml(state.result?.htmlResult ?: ""))
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(8.dp)
+                    )
+
+                    if (state.result?.htmlResult != null) {
+                        FilledTonalIconButton({
+                            clipboard.setText(result)
+                            Toast.makeText(ctx, "Result copied to clipboard", Toast.LENGTH_SHORT)
+                                .show()
+                        }) {
+                            Icon(
+                                Icons.Rounded.ContentCopy, contentDescription = "Copy"
+                            )
+                        }
                     }
                 }
             }
-
         }
 
         AnimatedVisibility(state.keyboardMode, modifier = Modifier.padding(8.dp, 0.dp)) {
