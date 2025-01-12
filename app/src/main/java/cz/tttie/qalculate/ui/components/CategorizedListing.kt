@@ -4,8 +4,11 @@ package cz.tttie.qalculate.ui.components
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -86,8 +89,8 @@ fun <T> CategorizedListing(
             expanded = searching,
             onExpandedChange = { searching = it },
             modifier = Modifier
+                .consumeWindowInsets(WindowInsets.statusBars)
                 .fillMaxWidth()
-
                 .padding(searchBarPadding, 0.dp),
             colors = sbDefaults
         ) {
