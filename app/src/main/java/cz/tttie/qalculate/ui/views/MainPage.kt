@@ -2,13 +2,13 @@ package cz.tttie.qalculate.ui.views
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -45,13 +45,14 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cz.tttie.qalculate.ui.utils.LongPressTonalButton
 import cz.tttie.qalculate.ui.utils.LongPressTonalIconButton
 import cz.tttie.qalculate.ui.vm.CalculatorViewModel
 import kotlinx.coroutines.awaitCancellation
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
     val comma = rootVm.useQalc { it.comma }
@@ -98,7 +99,12 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
             }
 
             val result = AnnotatedString.fromHtml(state.result?.htmlResult ?: "")
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = AnnotatedString.fromHtml(state.result?.htmlResult ?: ""),
                     modifier = Modifier
@@ -122,7 +128,7 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
 
         }
 
-        AnimatedVisibility(state.keyboardMode) {
+        AnimatedVisibility(state.keyboardMode, modifier = Modifier.padding(8.dp, 0.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -148,10 +154,12 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
             .weight(1f)
             .fillMaxHeight()
         val spacing = Arrangement.spacedBy(8.dp)
-        AnimatedVisibility(!state.keyboardMode) {
+        AnimatedVisibility(
+            !state.keyboardMode, modifier = Modifier.heightIn(Dp.Unspecified, 380.dp)
+        ) {
             Column(
                 modifier = Modifier
-                    .fillMaxHeight(.6f)
+                    .fillMaxHeight()
                     .padding(8.dp), verticalArrangement = spacing
             ) {
                 val rowModifier = Modifier.weight(1f)
