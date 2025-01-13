@@ -10,6 +10,9 @@ interface HistoryDao {
     @Query("SELECT * FROM HistoryEntry ORDER BY id DESC")
     suspend fun getEntries(): List<HistoryEntry>
 
+    @Query("SELECT * FROM HistoryEntry ORDER BY id DESC LIMIT 1")
+    suspend fun getLastEntry(): HistoryEntry?
+
     @Insert
     suspend fun insertEntry(entry: HistoryEntry)
 

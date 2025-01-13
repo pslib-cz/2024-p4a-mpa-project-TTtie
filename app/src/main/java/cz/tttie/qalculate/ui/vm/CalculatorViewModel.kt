@@ -15,10 +15,12 @@ import cz.tttie.qalculate.binding.options.EvaluationOptions
 import cz.tttie.qalculate.binding.options.evaluation.ApproximationMode
 import cz.tttie.qalculate.binding.options.evaluation.UnitConversion
 import cz.tttie.qalculate.db.HistoryEntry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.math.max
@@ -78,15 +80,15 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
 
     fun calculate() {
         viewModelScope.launch {
-            val result = useQalc { qalc ->
-                qalc.calculate(_state.value.expression.text, opts)
+            val result = withContext(Dispatchers.Default) {
+                useQalc { qalc ->
+                    qalc.calculate(_state.value.expression.text, opts)
+                }
             }
 
             QalcApplication.database.historyDao().insertEntry(
                 HistoryEntry(
-                    0L,
-                    dehtmlize(result.parsedExpression),
-                    dehtmlize(result.htmlResult)
+                    0L, dehtmlize(result.parsedExpression), dehtmlize(result.htmlResult)
                 )
             )
             _state.update { it.copy(result = result) }
@@ -111,6 +113,14 @@ class CalculatorViewModel(ctx: Context, private val qalc: Qalculate) : ViewModel
 
     fun toggleKeyboardMode() {
         _state.update { it.copy(keyboardMode = !it.keyboardMode) }
+    }
+
+    fun appendLastAnswer() {
+        viewModelScope.launch {
+            val lastEntry = QalcApplication.database.historyDao().getLastEntry() ?: return@launch
+
+            appendToExpression(lastEntry.result)
+        }
     }
 
     private fun dehtmlize(data: String) = AnnotatedString.fromHtml(data).toString()

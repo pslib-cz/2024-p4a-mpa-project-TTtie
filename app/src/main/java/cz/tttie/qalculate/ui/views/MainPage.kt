@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Keyboard
 import androidx.compose.material.icons.rounded.KeyboardHide
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -257,8 +258,7 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
                             withStyle(SpanStyle(baselineShift = BaselineShift.Superscript)) {
                                 append("x")
                             }
-                        },
-                        "ans" to AnnotatedString("Ans"),
+                        }
                     )) {
                         key(x) {
                             AppendingTonalButton(
@@ -268,6 +268,12 @@ fun MainPage(rootVm: CalculatorViewModel, modifier: Modifier = Modifier) {
                                 modifier = buttonModifier
                             )
                         }
+                    }
+
+                    FilledTonalButton({
+                        rootVm.appendLastAnswer()
+                    }, modifier = buttonModifier) {
+                        Text("Ans")
                     }
 
                     Button({
