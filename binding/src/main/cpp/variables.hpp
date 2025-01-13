@@ -1,0 +1,8 @@
+//
+// Created by tttie on 03.01.25.
+//
+
+#ifndef CZ_TTTIE_QALC_VARIABLES_HPP
+#define CZ_TTTIE_QALC_VARIABLES_HPP
+
+#endif //CZ_TTTIE_QALC_VARIABLES_HPP

@@ -1,0 +1,8 @@
+//
+// Created by tttie on 02.01.25.
+//
+
+#ifndef QALCULATE_FUNCTIONS_HPP
+#define QALCULATE_FUNCTIONS_HPP
+
+#endif //QALCULATE_FUNCTIONS_HPP
